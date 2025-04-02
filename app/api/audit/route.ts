@@ -1589,7 +1589,9 @@ function analyzeHreflang(html: string): HreflangAnalysis {
 
   // Check for language consistency
   const pageLanguage = $("html").attr("lang") || ""
-  const isLanguageConsistent = pageLanguage && hreflangTags.some((tag) => tag.hreflang.startsWith(pageLanguage))
+  const isLanguageConsistent = Boolean(
+    pageLanguage && hreflangTags.some((tag) => tag.hreflang.startsWith(pageLanguage)),
+  )
 
   const issues: string[] = []
   if (hreflangTags.length > 0) {
