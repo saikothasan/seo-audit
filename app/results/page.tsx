@@ -53,7 +53,8 @@ function ResultsContent() {
         toast({
           title: "Analysis Complete",
           description: "Your SEO audit has been completed successfully.",
-          variant: "success",
+          variant: "default",
+          className: "bg-green-500/10 text-green-600 border-green-500 dark:text-green-400",
         })
       } catch (err: any) {
         console.error("Error fetching results:", err)
