@@ -218,7 +218,7 @@ function analyzeSchemaMarkup(html: string) {
 // Analyze internal links
 function analyzeInternalLinks(html: string, baseUrl: string) {
   const $ = load(html)
-  const hostname = parseUrl(baseUrl).hostname
+  const hostname = parseUrl(baseUrl).hostname || ""
 
   const internalLinks = $("a[href]")
     .map((i, el) => {
@@ -232,7 +232,7 @@ function analyzeInternalLinks(html: string, baseUrl: string) {
         fullUrl = `${baseUrl.replace(/\/$/, "")}/${href.replace(/^\//, "")}`
       }
 
-      const isInternal = fullUrl.includes(hostname)
+      const isInternal = hostname ? fullUrl.includes(hostname) : false
       if (!isInternal) return null
 
       return {
@@ -255,7 +255,7 @@ function analyzeInternalLinks(html: string, baseUrl: string) {
 // Analyze external links
 function analyzeExternalLinks(html: string, baseUrl: string) {
   const $ = load(html)
-  const hostname = parseUrl(baseUrl).hostname
+  const hostname = parseUrl(baseUrl).hostname || ""
 
   const externalLinks = $("a[href]")
     .map((i, el) => {
@@ -263,7 +263,7 @@ function analyzeExternalLinks(html: string, baseUrl: string) {
       if (!href.startsWith("http")) return null
 
       const linkHostname = parseUrl(href).hostname
-      if (!linkHostname || linkHostname === hostname) return null
+      if (!linkHostname || (hostname && linkHostname === hostname)) return null
 
       return {
         text: $(el).text().trim(),
