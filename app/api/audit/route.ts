@@ -1964,7 +1964,7 @@ async function checkBrokenLinks(
           status: response.status,
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       brokenLinks.push({
         ...link,
