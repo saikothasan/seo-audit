@@ -1960,10 +1960,11 @@ async function checkBrokenLinks(
         })
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
       brokenLinks.push({
         ...link,
         status: "Error",
-        error: error.message,
+        error: errorMessage,
       })
     }
   }
