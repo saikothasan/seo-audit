@@ -94,16 +94,19 @@ function checkHeadingHierarchy($: ReturnType<typeof load>) {
   let lastHeadingLevel = 0
 
   $("h1, h2, h3, h4, h5, h6").each((i, el) => {
-    const tagName = el.tagName.toLowerCase()
-    const level = Number.parseInt(tagName.substring(1))
+    // Check if the element has a tagName property and it's a string
+    if ("tagName" in el && typeof el.tagName === "string") {
+      const tagName = el.tagName.toLowerCase()
+      const level = Number.parseInt(tagName.substring(1))
 
-    // Check if heading skips a level (e.g., h1 to h3 without h2)
-    if (level > lastHeadingLevel + 1 && i > 0) {
-      isProperHierarchy = false
-      return false // Break the loop
+      // Check if heading skips a level (e.g., h1 to h3 without h2)
+      if (level > lastHeadingLevel + 1 && i > 0) {
+        isProperHierarchy = false
+        return false // Break the loop
+      }
+
+      lastHeadingLevel = level
     }
-
-    lastHeadingLevel = level
   })
 
   return isProperHierarchy
