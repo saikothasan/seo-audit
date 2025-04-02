@@ -167,10 +167,16 @@ function analyzeSocialTags(html: string) {
   return { openGraph, twitter, issues }
 }
 
-// Check for schema markup
+// Define an interface for the schema object
+interface SchemaMarkup {
+  type: string
+  content: string
+}
+
+// Update the function to use the typed array
 function analyzeSchemaMarkup(html: string) {
   const $ = load(html)
-  const schemas = []
+  const schemas: SchemaMarkup[] = []
 
   // Look for JSON-LD schema
   $('script[type="application/ld+json"]').each((i, el) => {
@@ -201,7 +207,7 @@ function analyzeSchemaMarkup(html: string) {
     })
   })
 
-  const issues = []
+  const issues: string[] = []
   if (schemas.length === 0) {
     issues.push("No schema markup detected")
   }
