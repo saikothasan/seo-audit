@@ -716,12 +716,28 @@ function analyzeMobileFriendliness(html: string) {
   const smallTouchElements = $("a, button").filter((i, el) => {
     const width = $(el).css("width")
     const height = $(el).css("height")
-    // Check if dimensions are specified and less than recommended touch target size
-    const widthValue = width ? Number.parseInt(width) : 0
-    const heightValue = height ? Number.parseInt(height) : 0
 
-    // Only return true if we have valid dimensions that are too small
-    return (width && !isNaN(widthValue) && widthValue < 44) || (height && !isNaN(heightValue) && heightValue < 44)
+    // Parse dimensions, ensuring we get numbers or null
+    let widthValue = null
+    let heightValue = null
+
+    if (width && typeof width === "string") {
+      const parsed = Number.parseInt(width, 10)
+      if (!isNaN(parsed)) {
+        widthValue = parsed
+      }
+    }
+
+    if (height && typeof height === "string") {
+      const parsed = Number.parseInt(height, 10)
+      if (!isNaN(parsed)) {
+        heightValue = parsed
+      }
+    }
+
+    // Check if dimensions are specified and less than recommended touch target size (44px)
+    // Return true only if we have at least one valid dimension that's too small
+    return (widthValue !== null && widthValue < 44) || (heightValue !== null && heightValue < 44)
   }).length
 
   // Check for media queries
