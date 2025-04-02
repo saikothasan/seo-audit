@@ -106,7 +106,7 @@ async function fetchWebsiteData(url: string): Promise<WebsiteData> {
     }
 
     // Parse HTML with cheerio for better performance
-    const $ = cheerio.load(response.data)
+    const $ = cheerio.load(response.data) as cheerio.CheerioAPI
 
     // Use JSDOM for more complex DOM operations
     const dom = new JSDOM(response.data)
@@ -223,7 +223,7 @@ async function fetchWebsiteData(url: string): Promise<WebsiteData> {
   }
 }
 
-function extractMetaTags($: cheerio.CheerioAPI): MetaTags {
+function extractMetaTags($: cheerio.Root | cheerio.CheerioAPI): MetaTags {
   const metaTags: MetaTags = {
     title: $("title").text() || undefined,
     description: $('meta[name="description"]').attr("content") || undefined,
