@@ -990,7 +990,12 @@ function analyzeInternalLinks(
   const navigationLinks = internalLinks.filter((link) => link.inNavigation)
 
   // Analyze link distribution
-  const linkDistribution = {
+  const linkDistribution: {
+    navigation: number
+    footer: number
+    content: number
+    other: number
+  } = {
     navigation: internalLinks.filter((link) => link.inNavigation).length,
     footer: internalLinks.filter((link) => link.inFooter).length,
     content: internalLinks.filter((link) => link.inMainContent).length,
