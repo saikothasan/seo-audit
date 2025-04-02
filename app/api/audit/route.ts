@@ -566,7 +566,8 @@ function analyzeWebsite(data: WebsiteData): SEOAuditResult {
   const score = Math.round((passedChecks * 100 + warningChecks * 50) / totalChecks)
 
   // Calculate category scores
-  const categories = [...new Set(issues.map((issue) => issue.category))]
+  const categoriesSet = new Set(issues.map((issue) => issue.category))
+  const categories = Array.from(categoriesSet)
   const categoryScores: CategoryScore[] = categories.map((category) => {
     const categoryIssues = issues.filter((issue) => issue.category === category)
     const categoryPassedChecks = categoryIssues.filter((issue) => issue.severity === "good").length
