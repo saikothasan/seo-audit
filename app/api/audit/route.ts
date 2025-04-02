@@ -717,7 +717,11 @@ function analyzeMobileFriendliness(html: string) {
     const width = $(el).css("width")
     const height = $(el).css("height")
     // Check if dimensions are specified and less than recommended touch target size
-    return (width && Number.parseInt(width) < 44) || (height && Number.parseInt(height) < 44)
+    const widthValue = width ? Number.parseInt(width) : 0
+    const heightValue = height ? Number.parseInt(height) : 0
+
+    // Only return true if we have valid dimensions that are too small
+    return (width && !isNaN(widthValue) && widthValue < 44) || (height && !isNaN(heightValue) && heightValue < 44)
   }).length
 
   // Check for media queries
