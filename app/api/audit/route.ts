@@ -614,7 +614,7 @@ function analyzeUrl(url: string): { urlAnalysis: URLAnalysis; issues: string[] }
   const isSecure = parsedUrl.protocol === "https:"
 
   const urlAnalysis: URLAnalysis = {
-    protocol: parsedUrl.protocol,
+    protocol: parsedUrl.protocol || undefined,
     hostname: parsedUrl.hostname || "",
     path: parsedUrl.pathname || "",
     pathSegments,
