@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server"
 import { load } from "cheerio"
 import axios from "axios"
 import { parse as parseUrl } from "url"
-import type * as cheerio from "cheerio"
 
 // Helper function to fetch a URL
 async function fetchUrl(url: string) {
@@ -90,7 +89,7 @@ function analyzeHeadingStructure(html: string) {
 }
 
 // Check if headings follow a proper hierarchy
-function checkHeadingHierarchy($: cheerio.CheerioAPI) {
+function checkHeadingHierarchy($: ReturnType<typeof load>) {
   let isProperHierarchy = true
   let lastHeadingLevel = 0
 
