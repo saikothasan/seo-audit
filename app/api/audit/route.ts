@@ -1652,7 +1652,7 @@ async function analyzeRobotsTxt(baseUrl: string): Promise<RobotsTxtAnalysis> {
     if (hasRobotsTxt && robotsTxtContent) {
       const lines = robotsTxtContent.split("\n")
 
-      lines.forEach((line) => {
+      lines.forEach((line: string) => {
         line = line.trim()
 
         // Skip comments and empty lines
