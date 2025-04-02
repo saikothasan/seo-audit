@@ -156,10 +156,12 @@ async function fetchWebsiteData(url: string): Promise<WebsiteData> {
     const cssFiles = $('link[rel="stylesheet"]')
       .map((_, el) => $(el).attr("href"))
       .get()
+      .filter(Boolean) as string[]
+
     const jsFiles = $("script")
       .map((_, el) => $(el).attr("src"))
       .get()
-      .filter(Boolean)
+      .filter(Boolean) as string[]
 
     // Calculate content metrics
     const bodyText = $("body").text().trim()
