@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Mona_Sans as FontSans } from "next/font/google"
+import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { Analytics } from "@/components/analytics"
 import { Toaster } from "@/components/ui/toaster"
 
-const fontSans = FontSans({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
 })
@@ -36,7 +36,6 @@ export const metadata: Metadata = {
     creator: "@seoaudittool",
   },
   metadataBase: new URL("https://seo-audit-tool.com"),
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -46,7 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="relative flex min-h-screen flex-col">
             <Header />
@@ -61,6 +60,3 @@ export default function RootLayout({
   )
 }
 
-
-
-import './globals.css'
