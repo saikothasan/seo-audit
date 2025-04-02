@@ -51,6 +51,12 @@ export interface MetaTags {
   author?: string
   language?: string
   themeColor?: string
+  indexability?: {
+    noindex: boolean
+    nofollow: boolean
+    noarchive: boolean
+    nosnippet: boolean
+  }
 }
 
 export interface HeadingStructure {
@@ -60,17 +66,24 @@ export interface HeadingStructure {
   h4: string[]
   h5: string[]
   h6: string[]
+  nestedStructure?: boolean
 }
 
 export interface ImageInfo {
   src: string
   alt: string
   hasAlt: boolean
-  width?: number
-  height?: number
+  width?: number | string
+  height?: number | string
   size?: number
   format?: string
   lazyLoaded?: boolean
+  hasWidthHeight?: boolean
+  isLazyLoaded?: boolean
+  hasResponsiveConfig?: boolean
+  isInlineBase64?: boolean
+  fileExtension?: string
+  title?: string
 }
 
 export interface LinkInfo {
@@ -81,12 +94,29 @@ export interface LinkInfo {
   nofollow: boolean
   target?: string
   status?: number
+  url?: string
+  path?: string
+  isNofollow?: boolean
+  isCurrentPage?: boolean
+  isGeneric?: boolean
+  hasTitle?: boolean
+  inNavigation?: boolean
+  inFooter?: boolean
+  inMainContent?: boolean
+  hostname?: string
+  isSponsored?: boolean
+  isUGC?: boolean
+  hasSafeRel?: boolean
+  hasExternalIndicator?: boolean
+  hasIcon?: boolean
+  error?: string
 }
 
 export interface StructuredData {
   type: string
   valid: boolean
   errors?: string[]
+  content?: string
 }
 
 export interface PerformanceMetrics {
