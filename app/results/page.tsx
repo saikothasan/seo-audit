@@ -496,8 +496,7 @@ function ResultsContent() {
                   <div className="flex items-center gap-2">
                     <Progress
                       value={result.readability.readabilityScore}
-                      className="h-2"
-                      className={`${
+                      className={`h-2 ${
                         result.readability.readabilityScore >= 70
                           ? "bg-green-600"
                           : result.readability.readabilityScore >= 50
@@ -529,8 +528,7 @@ function ResultsContent() {
                   <div className="flex items-center gap-2">
                     <Progress
                       value={result.contentAnalysis.textToHtmlRatio * 100}
-                      className="h-2"
-                      className={`${
+                      className={`h-2 ${
                         result.contentAnalysis.textToHtmlRatio >= 0.25
                           ? "bg-green-600"
                           : result.contentAnalysis.textToHtmlRatio >= 0.1
@@ -770,13 +768,6 @@ function LoadingState() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-4 w-8" />
-                </div>
-                <Skeleton className="h-2 w-full" />
-              </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <Skeleton className="h-4 w-1/4" />
