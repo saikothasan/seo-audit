@@ -1187,7 +1187,7 @@ async function analyzeRobotsTxt(baseUrl: string) {
     if (hasRobotsTxt && robotsTxtContent) {
       const lines = robotsTxtContent.split("\n")
 
-      lines.forEach((line) => {
+      lines.forEach((line: string) => {
         line = line.trim()
 
         // Skip comments and empty lines
@@ -1830,7 +1830,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate overall score
     const maxScore = 100
-    const deductions = Math.min(allIssues.length * 2.5, 70) // Cap deductions at 70 points
+    const deductions = Math.min(allIssues.length * 2.5, 70)
     const overallScore = Math.max(0, maxScore - deductions)
 
     // Categorize issues by severity
