@@ -1649,7 +1649,8 @@ function validateStructuredData(html: string) {
       const jsonContent = $(el).html() || "{}"
       JSON.parse(jsonContent)
     } catch (e) {
-      errors.push(`Invalid JSON-LD: ${e.message}`)
+      // Check if e is an Error instance before accessing message property
+      errors.push(`Invalid JSON-LD: ${e instanceof Error ? e.message : String(e)}`)
     }
   })
 
