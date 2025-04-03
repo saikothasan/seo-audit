@@ -863,6 +863,11 @@ function analyzePerformance(html: string) {
 
   if (htmlSize > 100000) {
     issues.push(`Large HTML size (${Math.round(htmlSize / 1024)} KB)`)
+    issues.push(`High number of stylesheets (${styles + inlineStyles})`)
+  }
+
+  if (htmlSize > 100000) {
+    issues.push(`Large HTML size (${Math.round(htmlSize / 1024)} KB)`)
   }
 
   if (renderBlockingStyles > 2) {
@@ -1487,7 +1492,7 @@ async function checkBrokenLinks(html: string, baseUrl: string) {
       brokenLinks.push({
         ...link,
         status: "Error",
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }
