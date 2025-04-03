@@ -863,11 +863,6 @@ function analyzePerformance(html: string) {
 
   if (htmlSize > 100000) {
     issues.push(`Large HTML size (${Math.round(htmlSize / 1024)} KB)`)
-    issues.push(`High number of stylesheets (${styles + inlineStyles})`)
-  }
-
-  if (htmlSize > 100000) {
-    issues.push(`Large HTML size (${Math.round(htmlSize / 1024)} KB)`)
   }
 
   if (renderBlockingStyles > 2) {
@@ -1646,7 +1641,7 @@ function checkFavicon(html: string, baseUrl: string) {
 // Check for structured data errors
 function validateStructuredData(html: string) {
   const $ = load(html)
-  const errors = []
+  const errors: string[] = []
 
   // Check JSON-LD scripts
   $('script[type="application/ld+json"]').each((i, el) => {
