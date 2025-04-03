@@ -2031,7 +2031,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result)
   } catch (error) {
     console.error("Error in SEO audit:", error)
-    return NextResponse.json({ error: "Failed to perform SEO audit", details: error.message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Failed to perform SEO audit",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    )
   }
 }
 
