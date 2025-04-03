@@ -46,10 +46,11 @@ interface SeoAuditResult {
   recommendations: string[]
 }
 
+// Wrap the component that uses useSearchParams in a separate component
 function ResultsContent() {
   const searchParams = useSearchParams()
   const url = searchParams.get("url")
-  const [result, setResult] = useState<SeoAuditResult | null>(null)
+  const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -119,8 +120,11 @@ function ResultsContent() {
     )
   }
 
+  // Rest of the component remains the same...
+  // (Keep all the existing JSX and functionality)
   return (
     <div className="space-y-6">
+      {/* Overall Score */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
@@ -821,6 +825,7 @@ function LoadingState() {
   )
 }
 
+// Main component with Suspense boundary
 export default function ResultsPage() {
   return (
     <div className="container py-10">
