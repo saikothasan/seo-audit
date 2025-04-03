@@ -274,7 +274,7 @@ function ResultsContent() {
               <CardContent>
                 {result.issues.critical.length > 0 ? (
                   <ul className="space-y-2">
-                    {result.issues.critical.map((issue, index) => (
+                    {result.issues.critical.map((issue: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
                         <XCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                         <span>{issue}</span>
@@ -298,7 +298,7 @@ function ResultsContent() {
               <CardContent>
                 {result.issues.major.length > 0 ? (
                   <ul className="space-y-2">
-                    {result.issues.major.slice(0, 6).map((issue, index) => (
+                    {result.issues.major.slice(0, 6).map((issue: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
                         <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
                         <span>{issue}</span>
