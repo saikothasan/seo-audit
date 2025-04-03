@@ -255,7 +255,7 @@ function ResultsContent() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {result.recommendations.slice(0, 8).map((recommendation, index) => (
+                {result.recommendations.slice(0, 8).map((recommendation: string, index: number) => (
                   <li key={index} className="flex items-start gap-2">
                     <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
                     <span>{recommendation}</span>
@@ -770,13 +770,6 @@ function LoadingState() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-4 w-8" />
-                </div>
-                <Skeleton className="h-2 w-full" />
-              </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <Skeleton className="h-4 w-1/4" />
