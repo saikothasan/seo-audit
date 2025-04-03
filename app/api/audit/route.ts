@@ -1,427 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { load } from "cheerio"
-import axios, { type AxiosResponse } from "axios"
+import axios from "axios"
 import { parse as parseUrl } from "url"
 
-// Define types for our API responses
-interface SEOAuditResult {
-  url: string
-  overallScore: number
-  timestamp: string
-  metaTags: MetaTags
-  headings: HeadingAnalysis
-  contentAnalysis: ContentAnalysis
-  urlAnalysis: URLAnalysis
-  images: {
-    list: ImageInfo[]
-    stats: ImageStats
-  }
-  socialTags: SocialTags
-  schemaMarkup: SchemaMarkupAnalysis
-  links: {
-    internal: InternalLinksAnalysis
-    external: ExternalLinksAnalysis
-    broken: BrokenLink[]
-  }
-  mobileFriendliness: MobileFriendliness
-  performance: PerformanceAnalysis
-  security: {
-    https: HTTPSAnalysis
-    privacyCompliance: PrivacyCompliance
-  }
-  keywords: KeywordAnalysis
-  canonical: CanonicalAnalysis
-  hreflang: HreflangAnalysis
-  robotsTxt: RobotsTxtAnalysis
-  sitemap: SitemapAnalysis
-  readability: ReadabilityAnalysis
-  language: LanguageAnalysis
-  ampAnalysis: AMPAnalysis
-  favicon: FaviconAnalysis
-  duplicateContent: DuplicateContentAnalysis
-  issues: {
-    critical: string[]
-    major: string[]
-    minor: string[]
-  }
-  recommendations: string[]
-}
-
-interface MetaTags {
-  title?: string
-  description?: string
-  keywords?: string
-  viewport?: string
-  robots?: string
-  canonical?: string
-  author?: string
-  language?: string
-  indexability: {
-    noindex: boolean
-    nofollow: boolean
-    noarchive: boolean
-    nosnippet: boolean
-  }
-}
-
-interface HeadingAnalysis {
-  h1: number
-  h2: number
-  h3: number
-  h4: number
-  h5: number
-  h6: number
-  h1Text: string[]
-  h2Text: string[]
-  nestedStructure: boolean
-}
-
-interface ContentAnalysis {
-  wordCount: number
-  paragraphs: number
-  lists: number
-  listItems: number
-  images: number
-  tables: number
-  blockquotes: number
-  codeBlocks: number
-  readingTimeMinutes: number
-  contentToCodeRatio: number
-  isThinContent: boolean
-  hasGoodStructure: boolean
-  hasVisualElements: boolean
-  textToHtmlRatio: number
-  sentences: number
-}
-
-interface URLAnalysis {
-  protocol?: string
-  hostname: string
-  path: string
-  pathSegments: string[]
-  pathLength: number
-  totalUrlLength: number
-  hasQueryParams: boolean
-  queryParams: string[]
-  potentialDynamicParams: string[]
-  containsStopWords: boolean
-  hasKeywords: boolean
-  isCleanFormat: boolean
-  isSecure: boolean
-  domainLength: number
-  subdomains: boolean
-}
-
-interface ImageInfo {
-  src: string
-  alt: string
-  width: string
-  height: string
-  title: string
-  hasAlt: boolean
-  hasWidthHeight: boolean
-  isLazyLoaded: boolean
-  hasResponsiveConfig: boolean
-  isInlineBase64: boolean
-  fileExtension?: string
-}
-
-interface ImageStats {
-  total: number
-  withAlt: number
-  withDimensions: number
-  lazyLoaded: number
-  responsive: number
-  base64: number
-}
-
-interface SocialTags {
-  openGraph: {
-    title: string
-    description: string
-    image: string
-    url: string
-    type: string
-    siteName: string
-    locale: string
-  }
-  twitter: {
-    card: string
-    title: string
-    description: string
-    image: string
-    site: string
-    creator: string
-  }
-  facebook: {
-    appId: string
-    pageId: string
-  }
-  hasOpenGraph: boolean
-  hasTwitterCard: boolean
-  hasFacebookData: boolean
-}
-
-interface SchemaMarkup {
-  type: string
-  content: string
-}
-
-interface SchemaMarkupAnalysis {
-  schemas: SchemaMarkup[]
-  schemaTypes: string[]
-  hasSchema: boolean
-  hasJsonLd: boolean
-  hasMicrodata: boolean
-  hasRdfa: boolean
-  validation: {
-    errors: string[]
-    hasErrors: boolean
-  }
-}
-
-interface InternalLink {
-  text: string
-  url: string
-  path: string
-  isNofollow: boolean
-  isCurrentPage: boolean
-  hasText: boolean
-  isGeneric: boolean
-  hasTitle: boolean
-  inNavigation: boolean
-  inFooter: boolean
-  inMainContent: boolean
-}
-
-interface InternalLinksAnalysis {
-  list: InternalLink[]
-  stats: {
-    total: number
-    unique: number
-    nofollow: number
-    withTitle: number
-    toCurrentPage: number
-  }
-  distribution: {
-    navigation: number
-    footer: number
-    content: number
-    other: number
-  }
-  duplicates: string[]
-}
-
-interface ExternalLink {
-  text: string
-  url: string
-  hostname: string
-  isNofollow: boolean
-  isSponsored: boolean
-  isUGC: boolean
-  hasSafeRel: boolean
-  hasExternalIndicator: boolean
-  hasIcon: boolean
-}
-
-interface ExternalLinksAnalysis {
-  list: ExternalLink[]
-  stats: {
-    total: number
-    nofollow: number
-    sponsored: number
-    ugc: number
-    withTargetBlank: number
-    uniqueDomains: number
-  }
-  topDomains: { domain: string; count: number }[]
-}
-
-interface BrokenLink {
-  text: string
-  url: string
-  status: number | string
-  error?: string
-}
-
-interface MobileFriendliness {
-  hasMobileViewport: boolean
-  viewportTag: string
-  touchElements: number
-  smallTouchElements: number
-  fixedWidthElements: number
-  hasMediaQueries: boolean
-  hasAmpLink: boolean
-  hasAppleMobileTag: boolean
-  hasThemeColorTag: boolean
-  issues: string[]
-}
-
-interface PerformanceAnalysis {
-  resourceCounts: {
-    scripts: number
-    externalScripts: number
-    inlineScripts: number
-    styles: number
-    inlineStyles: number
-    images: number
-    iframes: number
-    fonts: number
-  }
-  htmlSize: number
-  renderBlocking: {
-    styles: number
-    scripts: number
-  }
-  resourceHints: {
-    preconnect: boolean
-    dnsPrefetch: boolean
-    preload: boolean
-  }
-  lazyLoading: {
-    images: number
-    ratio: number
-  }
-  hasCriticalCSS: boolean
-  hasJQuery: boolean
-  hasGoogleFonts: boolean
-  hasLargeFrameworks: boolean
-  issues: string[]
-}
-
-interface HTTPSAnalysis {
-  isHttps: boolean
-  hasMixedContent: boolean
-  issues: string[]
-}
-
-interface PrivacyCompliance {
-  hasCookieConsent: boolean
-  hasPrivacyPolicy: boolean
-  hasTerms: boolean
-  isCompliant: boolean
-}
-
-interface KeywordAnalysis {
-  analysis: {
-    keyword: string
-    inTitle: boolean
-    inH1: boolean
-    inUrl: boolean
-    inMetaDescription: boolean
-    occurrences: number
-    density: number
-    inFirstParagraph: boolean
-    inHeadings: boolean
-    prominence: number
-  }[]
-  stats: {
-    totalKeywords: number
-    keywordsInTitle: number
-    keywordsInH1: number
-    keywordsInMetaDescription: number
-    keywordsInUrl: number
-  }
-  issues: string[]
-}
-
-interface CanonicalAnalysis {
-  hasCanonical: boolean
-  canonicalUrl: string
-  isCanonicalSelf: boolean
-  isRelativeCanonical: boolean
-  multipleCanonicals: boolean
-  pagination: {
-    hasPrevLink: boolean
-    hasNextLink: boolean
-    prevLink: string
-    nextLink: string
-  }
-  hreflangLinks: number
-  issues: string[]
-}
-
-interface HreflangAnalysis {
-  hasHreflang: boolean
-  hreflangTags: { hreflang: string; href: string }[]
-  hasXDefault: boolean
-  hasSelfReference: boolean
-  isLanguageConsistent: boolean
-  issues: string[]
-}
-
-interface RobotsTxtAnalysis {
-  hasRobotsTxt: boolean
-  robotsTxtContent: string
-  userAgentSections: Record<string, string[]>
-  hasSitemapInRobots: boolean
-  issues: string[]
-}
-
-interface SitemapAnalysis {
-  hasSitemap: boolean
-  sitemapUrl: string
-  isValidXml: boolean
-  urlCount: number
-  isSitemapIndex: boolean
-  sitemapCount: number
-  hasLastmod: boolean
-  issues: string[]
-}
-
-interface ReadabilityAnalysis {
-  readabilityScore: number
-  readabilityLevel: string
-  textStats: {
-    sentences: number
-    words: number
-    syllables: number
-    averageWordsPerSentence: number
-    averageSyllablesPerWord: number
-    complexWords: number
-    complexWordPercentage: number
-    passiveVoice: number
-  }
-  issues: string[]
-}
-
-interface LanguageAnalysis {
-  htmlLang: string
-  metaLang: string
-  hreflangTags: string[]
-  detectedLang: string
-  issues: string[]
-}
-
-interface AMPAnalysis {
-  isAmp: boolean
-  hasAmpLink: boolean
-  ampLink: string
-  ampComponents: number
-  issues: string[]
-}
-
-interface FaviconAnalysis {
-  faviconLinks: {
-    href: string
-    type: string
-    sizes: string
-    rel: string
-  }[]
-  hasDefaultFavicon: boolean
-  hasAppleTouchIcon: boolean
-  hasDifferentSizes: boolean
-  issues: string[]
-}
-
-interface DuplicateContentAnalysis {
-  hasDuplicates: boolean
-  duplicateCount: number
-  duplicates: string[]
-}
-
 // Helper function to fetch a URL
-async function fetchUrl(url: string): Promise<AxiosResponse<any>> {
+async function fetchUrl(url: string) {
   try {
     const response = await axios.get(url, {
       headers: {
@@ -437,9 +20,9 @@ async function fetchUrl(url: string): Promise<AxiosResponse<any>> {
 }
 
 // Extract meta tags
-function extractMetaTags(html: string): MetaTags {
+function extractMetaTags(html: string) {
   const $ = load(html)
-  const metaTags: MetaTags = {
+  const metaTags = {
     title: $("title").text(),
     description: $('meta[name="description"]').attr("content") || "",
     keywords: $('meta[name="keywords"]').attr("content") || "",
@@ -472,9 +55,9 @@ function extractMetaTags(html: string): MetaTags {
 }
 
 // Analyze heading structure
-function analyzeHeadingStructure(html: string): { headings: HeadingAnalysis; issues: string[] } {
+function analyzeHeadingStructure(html: string) {
   const $ = load(html)
-  const headings: HeadingAnalysis = {
+  const headings = {
     h1: $("h1").length,
     h2: $("h2").length,
     h3: $("h3").length,
@@ -491,7 +74,7 @@ function analyzeHeadingStructure(html: string): { headings: HeadingAnalysis; iss
     nestedStructure: checkHeadingHierarchy($),
   }
 
-  const issues: string[] = []
+  const issues = []
   if (headings.h1 === 0) {
     issues.push("No H1 heading found")
   } else if (headings.h1 > 1) {
@@ -506,7 +89,7 @@ function analyzeHeadingStructure(html: string): { headings: HeadingAnalysis; iss
 }
 
 // Check if headings follow a proper hierarchy
-function checkHeadingHierarchy($: ReturnType<typeof load>): boolean {
+function checkHeadingHierarchy($: ReturnType<typeof load>) {
   let isProperHierarchy = true
   let lastHeadingLevel = 0
 
@@ -530,7 +113,7 @@ function checkHeadingHierarchy($: ReturnType<typeof load>): boolean {
 }
 
 // Analyze content
-function analyzeContent(html: string): { contentAnalysis: ContentAnalysis; issues: string[] } {
+function analyzeContent(html: string) {
   const $ = load(html)
   const bodyText = $("body").text().trim()
   const wordCount = bodyText.split(/\s+/).filter(Boolean).length
@@ -554,7 +137,7 @@ function analyzeContent(html: string): { contentAnalysis: ContentAnalysis; issue
   // Check for visual elements
   const hasVisualElements = images > 0 || tables > 0
 
-  const contentAnalysis: ContentAnalysis = {
+  const contentAnalysis = {
     wordCount,
     paragraphs,
     lists,
@@ -572,7 +155,7 @@ function analyzeContent(html: string): { contentAnalysis: ContentAnalysis; issue
     sentences: bodyText.split(/[.!?]+\s/).filter(Boolean).length,
   }
 
-  const issues: string[] = []
+  const issues = []
   if (wordCount < 300) {
     issues.push("Content is too short (less than 300 words)")
   }
@@ -593,7 +176,7 @@ function analyzeContent(html: string): { contentAnalysis: ContentAnalysis; issue
 }
 
 // Analyze URL structure
-function analyzeUrl(url: string): { urlAnalysis: URLAnalysis; issues: string[] } {
+function analyzeUrl(url: string) {
   const parsedUrl = parseUrl(url)
   const pathSegments = parsedUrl.pathname?.split("/").filter(Boolean) || []
 
@@ -613,8 +196,8 @@ function analyzeUrl(url: string): { urlAnalysis: URLAnalysis; issues: string[] }
   const isCleanFormat = !/[^\w\-/]/.test(parsedUrl.pathname || "") && !parsedUrl.pathname?.includes("__")
   const isSecure = parsedUrl.protocol === "https:"
 
-  const urlAnalysis: URLAnalysis = {
-    protocol: parsedUrl.protocol || undefined,
+  const urlAnalysis = {
+    protocol: parsedUrl.protocol,
     hostname: parsedUrl.hostname || "",
     path: parsedUrl.pathname || "",
     pathSegments,
@@ -631,7 +214,7 @@ function analyzeUrl(url: string): { urlAnalysis: URLAnalysis; issues: string[] }
     subdomains: (parsedUrl.hostname?.match(/\./g) || []).length > 1,
   }
 
-  const issues: string[] = []
+  const issues = []
   if (urlAnalysis.pathLength > 100) {
     issues.push("URL path is too long (over 100 characters)")
   }
@@ -664,14 +247,7 @@ function analyzeUrl(url: string): { urlAnalysis: URLAnalysis; issues: string[] }
 }
 
 // Analyze images
-function analyzeImages(
-  html: string,
-  baseUrl: string,
-): {
-  images: ImageInfo[]
-  imageStats: ImageStats
-  issues: string[]
-} {
+function analyzeImages(html: string, baseUrl: string) {
   const $ = load(html)
   const images = $("img")
     .map((i, el) => {
@@ -717,7 +293,7 @@ function analyzeImages(
     })
     .get()
 
-  const issues: string[] = []
+  const issues = []
   const imagesWithoutAlt = images.filter((img) => !img.hasAlt)
   if (imagesWithoutAlt.length > 0) {
     issues.push(`${imagesWithoutAlt.length} images missing alt text`)
@@ -745,32 +321,22 @@ function analyzeImages(
     issues.push(`${nonResponsiveImages.length} images don't have responsive image configuration (srcset/sizes)`)
   }
 
-  const imageStats: ImageStats = {
-    total: images.length,
-    withAlt: images.filter((img) => img.hasAlt).length,
-    withDimensions: images.filter((img) => img.hasWidthHeight).length,
-    lazyLoaded: images.filter((img) => img.isLazyLoaded).length,
-    responsive: images.filter((img) => img.hasResponsiveConfig).length,
-    base64: images.filter((img) => img.isInlineBase64).length,
-  }
-
   return {
     images,
-    imageStats,
     issues,
+    imageStats: {
+      total: images.length,
+      withAlt: images.filter((img) => img.hasAlt).length,
+      withDimensions: images.filter((img) => img.hasWidthHeight).length,
+      lazyLoaded: images.filter((img) => img.isLazyLoaded).length,
+      responsive: images.filter((img) => img.hasResponsiveConfig).length,
+      base64: images.filter((img) => img.isInlineBase64).length,
+    },
   }
 }
 
 // Analyze social media tags
-function analyzeSocialTags(html: string): {
-  openGraph: SocialTags["openGraph"]
-  twitter: SocialTags["twitter"]
-  facebook: SocialTags["facebook"]
-  hasOpenGraph: boolean
-  hasTwitterCard: boolean
-  hasFacebookData: boolean
-  issues: string[]
-} {
+function analyzeSocialTags(html: string) {
   const $ = load(html)
 
   const openGraph = {
@@ -797,7 +363,7 @@ function analyzeSocialTags(html: string): {
     pageId: $('meta[property="fb:page_id"]').attr("content") || "",
   }
 
-  const issues: string[] = []
+  const issues = []
   if (!openGraph.title && !openGraph.description) {
     issues.push("Missing Open Graph tags")
   } else {
@@ -825,16 +391,14 @@ function analyzeSocialTags(html: string): {
   }
 }
 
-// Analyze schema markup
-function analyzeSchemaMarkup(html: string): {
-  schemas: SchemaMarkup[]
-  schemaTypes: string[]
-  hasSchema: boolean
-  hasJsonLd: boolean
-  hasMicrodata: boolean
-  hasRdfa: boolean
-  issues: string[]
-} {
+// Define an interface for the schema object
+interface SchemaMarkup {
+  type: string
+  content: string
+}
+
+// Update the function to use the typed array
+function analyzeSchemaMarkup(html: string) {
   const $ = load(html)
   const schemas: SchemaMarkup[] = []
   const schemaTypes: string[] = []
@@ -914,21 +478,12 @@ function analyzeSchemaMarkup(html: string): {
 }
 
 // Analyze internal links
-function analyzeInternalLinks(
-  html: string,
-  baseUrl: string,
-): {
-  internalLinks: InternalLink[]
-  duplicateLinks: string[]
-  linkDistribution: Record<string, number>
-  stats: InternalLinksAnalysis["stats"]
-  issues: string[]
-} {
+function analyzeInternalLinks(html: string, baseUrl: string) {
   const $ = load(html)
   const hostname = parseUrl(baseUrl).hostname || ""
   const currentPath = parseUrl(baseUrl).pathname || "/"
 
-  const internalLinks: InternalLink[] = $("a[href]")
+  const internalLinks = $("a[href]")
     .map((i, el) => {
       const href = $(el).attr("href") || ""
       let fullUrl = href
@@ -973,7 +528,7 @@ function analyzeInternalLinks(
       }
     })
     .get()
-    .filter(Boolean) as InternalLink[]
+    .filter(Boolean)
 
   // Group links by path to identify duplicates
   const linksByPath: Record<string, number> = {}
@@ -995,9 +550,9 @@ function analyzeInternalLinks(
     footer: internalLinks.filter((link) => link.inFooter).length,
     content: internalLinks.filter((link) => link.inMainContent).length,
     other: internalLinks.filter((link) => !link.inNavigation && !link.inFooter && !link.inMainContent).length,
-  } as const
+  }
 
-  const issues: string[] = []
+  const issues = []
   if (internalLinks.length === 0) {
     issues.push("No internal links found")
   }
@@ -1041,19 +596,11 @@ function analyzeInternalLinks(
 }
 
 // Analyze external links
-function analyzeExternalLinks(
-  html: string,
-  baseUrl: string,
-): {
-  externalLinks: ExternalLink[]
-  topDomains: { domain: string; count: number }[]
-  issues: string[]
-  stats: ExternalLinksAnalysis["stats"]
-} {
+function analyzeExternalLinks(html: string, baseUrl: string) {
   const $ = load(html)
   const hostname = parseUrl(baseUrl).hostname || ""
 
-  const externalLinks: ExternalLink[] = $("a[href]")
+  const externalLinks = $("a[href]")
     .map((i, el) => {
       const href = $(el).attr("href") || ""
       if (!href.startsWith("http")) return null
@@ -1081,7 +628,7 @@ function analyzeExternalLinks(
       }
     })
     .get()
-    .filter(Boolean) as ExternalLink[]
+    .filter(Boolean)
 
   // Group by domain
   const domainCount: Record<string, number> = {}
@@ -1095,7 +642,7 @@ function analyzeExternalLinks(
     .slice(0, 5)
     .map(([domain, count]) => ({ domain, count }))
 
-  const issues: string[] = []
+  const issues = []
   const externalLinksWithoutNofollow = externalLinks.filter((link) => !link.isNofollow)
   if (externalLinksWithoutNofollow.length > 0) {
     issues.push(`${externalLinksWithoutNofollow.length} external links without nofollow`)
@@ -1138,7 +685,7 @@ function analyzeExternalLinks(
 }
 
 // Check for mobile-friendliness
-function analyzeMobileFriendliness(html: string): MobileFriendliness {
+function analyzeMobileFriendliness(html: string) {
   const $ = load(html)
 
   const viewportTag = $('meta[name="viewport"]').attr("content") || ""
@@ -1203,7 +750,7 @@ function analyzeMobileFriendliness(html: string): MobileFriendliness {
   // Check for amp link
   const hasAmpLink = $('link[rel="amphtml"]').length > 0
 
-  const issues: string[] = []
+  const issues = []
   if (!hasMobileViewport) {
     issues.push("No mobile viewport meta tag")
   }
@@ -1243,13 +790,13 @@ function analyzeMobileFriendliness(html: string): MobileFriendliness {
 }
 
 // Check for HTTPS security
-function analyzeHttps(url: string): HTTPSAnalysis {
+function analyzeHttps(url: string) {
   const isHttps = url.startsWith("https://")
 
   // Check for mixed content
   const hasMixedContent = false // This would require client-side check
 
-  const issues: string[] = []
+  const issues = []
   if (!isHttps) {
     issues.push("Website is not using HTTPS")
   }
@@ -1266,7 +813,7 @@ function analyzeHttps(url: string): HTTPSAnalysis {
 }
 
 // Analyze page performance (basic metrics)
-function analyzePerformance(html: string): PerformanceAnalysis {
+function analyzePerformance(html: string) {
   const $ = load(html)
 
   // Count resources
@@ -1305,7 +852,7 @@ function analyzePerformance(html: string): PerformanceAnalysis {
   const hasGoogleFonts = html.includes("fonts.googleapis.com")
   const hasLargeFrameworks = html.includes("angular") || html.includes("react") || html.includes("vue")
 
-  const issues: string[] = []
+  const issues = []
   if (scripts > 15) {
     issues.push(`High number of script tags (${scripts})`)
   }
@@ -1376,15 +923,7 @@ function analyzePerformance(html: string): PerformanceAnalysis {
 }
 
 // Analyze keyword usage
-function analyzeKeywords(
-  html: string,
-  url: string,
-): {
-  keywordAnalysis: KeywordAnalysis["analysis"]
-  sortedKeywords: KeywordAnalysis["analysis"]
-  issues: string[]
-  stats: KeywordAnalysis["stats"]
-} {
+function analyzeKeywords(html: string, url: string) {
   const $ = load(html)
 
   // Extract potential keywords from meta tags
@@ -1458,7 +997,7 @@ function analyzeKeywords(
     })
     .slice(0, 10) // Get top 10 keywords
 
-  const issues: string[] = []
+  const issues = []
   keywordAnalysis.forEach((analysis) => {
     if (analysis.density > 0.05) {
       issues.push(`Keyword "${analysis.keyword}" may be overused (${(analysis.density * 100).toFixed(1)}%)`)
@@ -1507,7 +1046,7 @@ function calculateKeywordProminence(keyword: string, text: string): number {
 }
 
 // Check for canonical issues
-function analyzeCanonical(html: string, url: string): CanonicalAnalysis {
+function analyzeCanonical(html: string, url: string) {
   const $ = load(html)
 
   const canonicalUrl = $('link[rel="canonical"]').attr("href") || ""
@@ -1529,7 +1068,7 @@ function analyzeCanonical(html: string, url: string): CanonicalAnalysis {
   // Check for hreflang links
   const hreflangLinks = $('link[rel="alternate"][hreflang]').length
 
-  const issues: string[] = []
+  const issues = []
   if (!hasCanonical) {
     issues.push("No canonical URL specified")
   } else if (!isCanonicalSelf) {
@@ -1566,7 +1105,7 @@ function analyzeCanonical(html: string, url: string): CanonicalAnalysis {
 }
 
 // Check for hreflang tags
-function analyzeHreflang(html: string): HreflangAnalysis {
+function analyzeHreflang(html: string) {
   const $ = load(html)
 
   const hreflangTags = $('link[rel="alternate"][hreflang]')
@@ -1589,11 +1128,9 @@ function analyzeHreflang(html: string): HreflangAnalysis {
 
   // Check for language consistency
   const pageLanguage = $("html").attr("lang") || ""
-  const isLanguageConsistent = Boolean(
-    pageLanguage && hreflangTags.some((tag) => tag.hreflang.startsWith(pageLanguage)),
-  )
+  const isLanguageConsistent = pageLanguage && hreflangTags.some((tag) => tag.hreflang.startsWith(pageLanguage))
 
-  const issues: string[] = []
+  const issues = []
   if (hreflangTags.length > 0) {
     if (!hasXDefault) {
       issues.push("Missing x-default hreflang tag")
@@ -1625,7 +1162,7 @@ function analyzeHreflang(html: string): HreflangAnalysis {
 }
 
 // Check for robots.txt
-async function analyzeRobotsTxt(baseUrl: string): Promise<RobotsTxtAnalysis> {
+async function analyzeRobotsTxt(baseUrl: string) {
   try {
     // Extract protocol and hostname
     const { protocol, hostname } = parseUrl(baseUrl)
@@ -1633,8 +1170,6 @@ async function analyzeRobotsTxt(baseUrl: string): Promise<RobotsTxtAnalysis> {
       return {
         hasRobotsTxt: false,
         robotsTxtContent: "",
-        userAgentSections: {},
-        hasSitemapInRobots: false,
         issues: ["Could not parse hostname from URL"],
       }
     }
@@ -1652,7 +1187,7 @@ async function analyzeRobotsTxt(baseUrl: string): Promise<RobotsTxtAnalysis> {
     if (hasRobotsTxt && robotsTxtContent) {
       const lines = robotsTxtContent.split("\n")
 
-      lines.forEach((line: string) => {
+      lines.forEach((line) => {
         line = line.trim()
 
         // Skip comments and empty lines
@@ -1678,7 +1213,7 @@ async function analyzeRobotsTxt(baseUrl: string): Promise<RobotsTxtAnalysis> {
     // Check for sitemap in robots.txt
     const hasSitemapInRobots = robotsTxtContent.toLowerCase().includes("sitemap:")
 
-    const issues: string[] = []
+    const issues = []
     if (!hasRobotsTxt) {
       issues.push("No robots.txt file found")
     } else {
@@ -1714,7 +1249,7 @@ async function analyzeRobotsTxt(baseUrl: string): Promise<RobotsTxtAnalysis> {
 }
 
 // Check for sitemap.xml
-async function analyzeSitemap(baseUrl: string): Promise<SitemapAnalysis> {
+async function analyzeSitemap(baseUrl: string) {
   try {
     // Extract protocol and hostname
     const { protocol, hostname } = parseUrl(baseUrl)
@@ -1723,10 +1258,6 @@ async function analyzeSitemap(baseUrl: string): Promise<SitemapAnalysis> {
         hasSitemap: false,
         sitemapUrl: "",
         isValidXml: false,
-        urlCount: 0,
-        isSitemapIndex: false,
-        sitemapCount: 0,
-        hasLastmod: false,
         issues: ["Could not parse hostname from URL"],
       }
     }
@@ -1750,7 +1281,7 @@ async function analyzeSitemap(baseUrl: string): Promise<SitemapAnalysis> {
     // Check for lastmod tags
     const hasLastmod = sitemapContent.includes("<lastmod>")
 
-    const issues: string[] = []
+    const issues = []
     if (!hasSitemap) {
       issues.push("No sitemap.xml file found")
     } else {
@@ -1792,7 +1323,7 @@ async function analyzeSitemap(baseUrl: string): Promise<SitemapAnalysis> {
 }
 
 // Calculate readability score (Flesch-Kincaid)
-function calculateReadability(html: string): ReadabilityAnalysis {
+function calculateReadability(html: string) {
   const $ = load(html)
 
   // Extract text content
@@ -1856,7 +1387,7 @@ function calculateReadability(html: string): ReadabilityAnalysis {
   const passiveVoiceMatches = text.match(/\b(is|are|was|were|be|been|being)\s+\w+ed\b/gi) || []
   const passiveVoiceCount = passiveVoiceMatches.length
 
-  const issues: string[] = []
+  const issues = []
   if (readabilityScore < 60) {
     issues.push(`Content may be difficult to read (score: ${readabilityScore.toFixed(1)})`)
   }
@@ -1891,14 +1422,7 @@ function calculateReadability(html: string): ReadabilityAnalysis {
 }
 
 // Check for broken links
-async function checkBrokenLinks(
-  html: string,
-  baseUrl: string,
-): Promise<{
-  checkedLinks: number
-  brokenLinks: BrokenLink[]
-  issues: string[]
-}> {
+async function checkBrokenLinks(html: string, baseUrl: string) {
   const $ = load(html)
   const { protocol, hostname } = parseUrl(baseUrl)
 
@@ -1945,7 +1469,7 @@ async function checkBrokenLinks(
   const linksToCheck = links.slice(0, 10)
 
   // Check each link
-  const brokenLinks: BrokenLink[] = []
+  const brokenLinks = []
   for (const link of linksToCheck) {
     try {
       const response = await axios.head(link.url, {
@@ -1959,17 +1483,16 @@ async function checkBrokenLinks(
           status: response.status,
         })
       }
-    } catch (error: any) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
+    } catch (error) {
       brokenLinks.push({
         ...link,
         status: "Error",
-        error: errorMessage,
+        error: error.message,
       })
     }
   }
 
-  const issues: string[] = []
+  const issues = []
   if (brokenLinks.length > 0) {
     issues.push(`${brokenLinks.length} broken links found`)
   }
@@ -1982,7 +1505,7 @@ async function checkBrokenLinks(
 }
 
 // Detect page language
-function detectLanguage(html: string): LanguageAnalysis {
+function detectLanguage(html: string) {
   const $ = load(html)
 
   // Check HTML lang attribute
@@ -1998,7 +1521,7 @@ function detectLanguage(html: string): LanguageAnalysis {
 
   const detectedLang = htmlLang || metaLang || (hreflangTags.length > 0 ? hreflangTags[0] : "")
 
-  const issues: string[] = []
+  const issues = []
   if (!htmlLang) {
     issues.push("HTML tag is missing lang attribute")
   }
@@ -2017,7 +1540,7 @@ function detectLanguage(html: string): LanguageAnalysis {
 }
 
 // Detect AMP version
-function detectAmp(html: string): AMPAnalysis {
+function detectAmp(html: string) {
   const $ = load(html)
 
   // Check for AMP link
@@ -2030,7 +1553,7 @@ function detectAmp(html: string): AMPAnalysis {
   // Check for AMP components
   const ampComponents = $('script[src*="ampproject.org"]').length
 
-  const issues: string[] = []
+  const issues = []
   if (!isAmp && !hasAmpLink) {
     issues.push("No AMP version of this page is available")
   }
@@ -2049,7 +1572,7 @@ function detectAmp(html: string): AMPAnalysis {
 }
 
 // Check for favicon
-function checkFavicon(html: string, baseUrl: string): FaviconAnalysis {
+function checkFavicon(html: string, baseUrl: string) {
   const $ = load(html)
 
   // Check for favicon links
@@ -2089,7 +1612,7 @@ function checkFavicon(html: string, baseUrl: string): FaviconAnalysis {
   // Check for different sizes
   const hasDifferentSizes = new Set(faviconLinks.map((link) => link.sizes)).size > 1
 
-  const issues: string[] = []
+  const issues = []
   if (faviconLinks.length === 0) {
     issues.push("No favicon found")
   }
@@ -2116,16 +1639,16 @@ function checkFavicon(html: string, baseUrl: string): FaviconAnalysis {
 }
 
 // Check for structured data errors
-function validateStructuredData(html: string): { errors: string[]; hasErrors: boolean } {
+function validateStructuredData(html: string) {
   const $ = load(html)
-  const errors: string[] = []
+  const errors = []
 
   // Check JSON-LD scripts
   $('script[type="application/ld+json"]').each((i, el) => {
     try {
       const jsonContent = $(el).html() || "{}"
       JSON.parse(jsonContent)
-    } catch (e: any) {
+    } catch (e) {
       errors.push(`Invalid JSON-LD: ${e.message}`)
     }
   })
@@ -2155,7 +1678,7 @@ function validateStructuredData(html: string): { errors: string[]; hasErrors: bo
 }
 
 // Detect duplicate content on page
-function detectDuplicateContent(html: string): DuplicateContentAnalysis {
+function detectDuplicateContent(html: string) {
   const $ = load(html)
   const paragraphs: string[] = []
 
@@ -2190,7 +1713,7 @@ function detectDuplicateContent(html: string): DuplicateContentAnalysis {
 }
 
 // Check for cookie and privacy compliance hints
-function checkPrivacyCompliance(html: string): PrivacyCompliance {
+function checkPrivacyCompliance(html: string) {
   const $ = load(html)
 
   // Check for cookie consent
@@ -2224,8 +1747,7 @@ function checkPrivacyCompliance(html: string): PrivacyCompliance {
 // Main API handler
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { url } = body
+    const { url } = await request.json()
 
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 })
@@ -2336,7 +1858,7 @@ export async function POST(request: NextRequest) {
     const minorIssues = allIssues.filter((issue) => !criticalIssues.includes(issue) && !majorIssues.includes(issue))
 
     // Prepare recommendations
-    const recommendations: string[] = []
+    const recommendations = []
 
     if (criticalIssues.length > 0) {
       recommendations.push("Fix critical issues first, especially related to broken links, missing H1 tags, and HTTPS.")
@@ -2417,7 +1939,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare response
-    const result: SEOAuditResult = {
+    const result = {
       url,
       overallScore,
       timestamp: new Date().toISOString(),
@@ -2441,7 +1963,6 @@ export async function POST(request: NextRequest) {
         facebook,
         hasOpenGraph,
         hasTwitterCard,
-        hasFacebookData: !!(facebook.appId || facebook.pageId),
       },
 
       // Structured data
@@ -2449,9 +1970,6 @@ export async function POST(request: NextRequest) {
         schemas,
         schemaTypes,
         hasSchema,
-        hasJsonLd: schemas.some((s) => s.type === "json-ld"),
-        hasMicrodata: schemas.some((s) => s.type === "microdata"),
-        hasRdfa: schemas.some((s) => s.type === "rdfa"),
         validation: structuredDataValidation,
       },
 
@@ -2510,7 +2028,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(result)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in SEO audit:", error)
     return NextResponse.json({ error: "Failed to perform SEO audit", details: error.message }, { status: 500 })
   }
