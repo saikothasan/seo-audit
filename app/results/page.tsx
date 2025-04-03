@@ -181,33 +181,21 @@ function ResultsContent() {
                   <span className="text-sm font-medium text-red-600">Critical Issues</span>
                   <span className="text-sm font-medium text-red-600">{result.issues.critical.length}</span>
                 </div>
-                <Progress
-                  value={result.issues.critical.length * 10}
-                  className="h-2 bg-red-100"
-                  indicatorClassName="bg-red-600"
-                />
+                <Progress value={result.issues.critical.length * 10} className="h-2 bg-red-100 bg-red-600" />
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <span className="text-sm font-medium text-yellow-600">Major Issues</span>
                   <span className="text-sm font-medium text-yellow-600">{result.issues.major.length}</span>
                 </div>
-                <Progress
-                  value={result.issues.major.length * 5}
-                  className="h-2 bg-yellow-100"
-                  indicatorClassName="bg-yellow-600"
-                />
+                <Progress value={result.issues.major.length * 5} className="h-2 bg-yellow-100 bg-yellow-600" />
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <span className="text-sm font-medium text-blue-600">Minor Issues</span>
                   <span className="text-sm font-medium text-blue-600">{result.issues.minor.length}</span>
                 </div>
-                <Progress
-                  value={result.issues.minor.length * 2}
-                  className="h-2 bg-blue-100"
-                  indicatorClassName="bg-blue-600"
-                />
+                <Progress value={result.issues.minor.length * 2} className="h-2 bg-blue-100 bg-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -509,7 +497,7 @@ function ResultsContent() {
                     <Progress
                       value={result.readability.readabilityScore}
                       className="h-2"
-                      indicatorClassName={`${
+                      className={`${
                         result.readability.readabilityScore >= 70
                           ? "bg-green-600"
                           : result.readability.readabilityScore >= 50
@@ -542,7 +530,7 @@ function ResultsContent() {
                     <Progress
                       value={result.contentAnalysis.textToHtmlRatio * 100}
                       className="h-2"
-                      indicatorClassName={`${
+                      className={`${
                         result.contentAnalysis.textToHtmlRatio >= 0.25
                           ? "bg-green-600"
                           : result.contentAnalysis.textToHtmlRatio >= 0.1
